@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MISIÓN: NAVEGACIÓN SEGURA</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            dark: '#0a0d1a',
+                            card: '#13182e',
+                            border: '#2a3459',
+                            accent: '#00f0ff',
+                            purple: '#7b2cbf',
+                            pink: '#f72585',
+                            alert: '#ff0055',
+                            success: '#00f5d4'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Courier New', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Cyber & Security Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0a0d1a;
+            color: #e2e8f0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(123, 44, 191, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(0, 240, 255, 0.12) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        .cyber-border {
+            border: 1px solid #2a3459;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+        }
+
+        .cyber-border-glow {
+            border: 1px solid #00f0ff;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+        }
+
+        .neon-text-blue {
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+        }
+
+        .neon-text-pink {
+            text-shadow: 0 0 8px rgba(247, 37, 133, 0.6);
+        }
+
+        .cyber-button {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cyber-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+
+        .cyber-button:active {
+            transform: translateY(1px);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0d1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a3459;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f0ff;
+        }
+
+        /* Animations */
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.03); }
+        }
+        .pulse-animation {
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
+
+        .glass-panel {
+            background: rgba(19, 24, 46, 0.85);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-cyber-accent selection:text-black">
+
+    <!-- TOP HEADER / STATS BAR -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-cyber-border px-4 py-3">
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            
+            <!-- Logo / Game Name -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="game.showScreen('map')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyber-purple to-cyber-accent flex items-center justify-center text-white shadow-lg">
+                    <i class="fa-solid font-bold fa-shield-halved text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg tracking-wider text-white neon-text-blue leading-none">
+                        MISIÓN: NAVEGACIÓN SEGURA
+                    </h1>
+                    <span class="text-xs text-cyber-accent font-mono tracking-wide">CIUDAD DIGITAL v2.6</span>
+                </div>
+            </div>
+
+            <!-- Stats & Controls -->
+            <div class="flex items-center space-x-4 sm:space-x-6">
+                <!-- Score -->
+                <div class="flex items-center space-x-2 bg-cyber-dark/80 px-3 py-1.5 rounded-lg border border-cyber-border">
+                    <i class="fa-solid fa-star text-yellow-400"></i>
+                    <span class="text-xs text-gray-400 uppercase font-semibold">Puntos:</span>
+                    <span id="score-display" class="font-mono font-bold text-cyber-accent text-base">0</span>
+                </div>
+
+                <!-- Badges Summary -->
+                <div class="flex items-center space-x-2 bg-cyber-dark/80 px-3 py-1.5 rounded-lg border border-cyber-border">
+                    <i class="fa-solid fa-award text-cyber-pink"></i>
+                    <span class="text-xs text-gray-400 uppercase font-semibold hidden sm:inline">Insignias:</span>
+                    <span id="badges-count-display" class="font-mono font-bold text-cyber-pink text-base">0/4</span>
+                </div>
+
+                <!-- Sound Toggle -->
+                <button id="sound-btn" onclick="game.toggleSound()" class="p-2 rounded-lg bg-cyber-dark/80 border border-cyber-border text-gray-300 hover:text-cyber-accent transition" title="Activar/Desactivar Sonido">
+                    <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Global Progress Bar -->
+        <div class="max-w-6xl mx-auto mt-2 bg-cyber-dark h-2 rounded-full overflow-hidden border border-cyber-border/50">
+            <div id="global-progress" class="bg-gradient-to-r from-cyber-purple via-cyber-accent to-cyber-success h-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main id="main-container" class="max-w-5xl mx-auto w-full p-4 sm:p-6 flex-grow flex flex-col justify-center">
+        <!-- Dynamic Content Injected Here by JS -->
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="glass-panel border-t border-cyber-border py-4 px-4 text-center text-xs text-gray-400">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p>«Pensá antes de hacer clic. Protegete y ayudá a los demás»</p>
+            <p class="text-gray-500">Juego Digital Educativo — Argentina 2026</p>
+        </div>
+    </footer>
+
+    <!-- AUDIO SYNTHESIZER (Web Audio API) -->
+    <script>
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) this.ctx = new AudioContext();
+                }
+            }
+
+            playClick() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.05);
+            }
+
+            playSuccess() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                osc.frequency.setValueAtTime(1046.50, now + 0.24); // C6
+
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(now + 0.4);
+            }
+
+            playBadge() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const now = this.ctx.currentTime;
+                [440, 554.37, 659.25, 880].forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + i * 0.08);
+                    gain.gain.setValueAtTime(0.2, now + i * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.2);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + i * 0.08);
+                    osc.stop(now + i * 0.08 + 0.2);
+                });
+            }
+
+            playError() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.2);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(now + 0.2);
+            }
+        }
+
+        const sound = new SoundFX();
+    </script>
+
+    <!-- GAME ENGINE & DATA -->
+    <script>
+        const GAME_STATE = {
+            score: 0,
+            soundEnabled: true,
+            completedLevels: [],
+            badges: {
+                detective: false,
+                guardian: false,
+                aliado: false,
+                experto: false
+            },
+            commitments: []
+        };
+
+        const DATA = {
+            level1: [
+                { id: 'grooming', term: 'Grooming', def: 'Acciones de un adulto para ganarse la confianza de un menor con fines de abuso o acoso sexual.' },
+                { id: 'ciberbullying', term: 'Ciberbullying', def: 'Acoso, humillación o intimidación entre pares o iguales a través de medios digitales.' },
+                { id: 'sextorsion', term: 'Sextorsión', def: 'Chantaje o amenaza con publicar imágenes o datos íntimos si no se cumple una exigencia.' },
+                { id: 'difusion', term: 'Difusión no consentida de fotos', def: 'Compartir imágenes o videos íntimos de una persona sin su autorización explícita.' },
+                { id: 'suplantacion', term: 'Suplantación de identidad', def: 'Crear un perfil falso o usar la cuenta de otra persona para hacerse pasar por ella.' },
+                { id: 'robo_cuentas', term: 'Robo de cuentas y contraseñas', def: 'Apoderarse del acceso de un perfil o red social cambiando las claves sin permiso.' },
+                { id: 'phishing', term: 'Phishing', def: 'Engaño mediante mensajes o webs falsas para robar contraseñas o datos personales.' },
+                { id: 'fraude', term: 'Fraude informático', def: 'Estafas económicas o engaños en línea para obtener dinero de forma ilegítima.' },
+                { id: 'robo_datos', term: 'Robo de datos personales', def: 'Obtención no autorizada de nombres, documentos, direcciones o teléfonos.' },
+                { id: 'acceso_ilegal', term: 'Acceso ilegal a sistemas', def: 'Ingresar sin permiso a redes, celulares o servidores ajenos.' }
+            ],
+            level2: [
+                {
+                    sender: "PremioGamer_Oficial",
+                    avatar: "🎁",
+                    platform: "Mensaje de Instagram",
+                    text: "¡FELICITACIONES! 🎉 Ganaste una consola de última generación y un teléfono nuevo. Para reclamarlo, entrá a este enlace urgente: <span class='underline text-cyber-accent cursor-pointer'>http://premio-super-ganador.tk/login</span> y escribí tu usuario y contraseña.",
+                    options: [
+                        { text: "A. Abrir el enlace e ingresar mis datos inmediatamente.", correct: false, explanation: "¡Cuidado! Ninguna empresa o sorteo legítimo te pedirá tu contraseña personal para entregarte un premio." },
+                        { text: "B. Compartir el mensaje con todos mis amigos para que también ganen.", correct: false, explanation: "Reenviar estos mensajes ayuda a difundir estafas. Siempre hay que verificar antes." },
+                        { text: "C. No abrir el enlace y verificar el supuesto premio por un canal oficial.", correct: true, explanation: "¡Excelente decisión! Los premios sospechosos que piden claves o generan urgencia suelen ser estafas (Phishing)." }
+                    ]
+                },
+                {
+                    sender: "Soporte_RedSocial_Segura",
+                    avatar: "⚠️",
+                    platform: "Mensaje Directo",
+                    text: "ALERTA DE SEGURIDAD: Tu cuenta será suspendida en 1 hora por actividad sospechosa. Evitá el cierre haciendo clic acá e ingresando tus datos de acceso: <span class='underline text-cyber-accent cursor-pointer'>http://verificar-cuenta-ahora.net</span>",
+                    options: [
+                        { text: "A. Asustarme e ingresar mis datos rápido antes de que la borren.", correct: false, explanation: "Los ciberdelincuentes usan la urgencia y el miedo para que actúes sin pensar." },
+                        { text: "B. No hacer clic en el enlace y revisar el estado de seguridad desde los ajustes oficiales de la app.", correct: true, explanation: "¡Súper seguro! Las redes sociales nunca piden tu clave por chat ni te amenazan con enlaces extraños." },
+                        { text: "C. Enviar el enlace a un amigo para que lo pruebe primero.", correct: false, explanation: "Podrías poner en riesgo la cuenta de tu amigo. Es mejor ignorar el enlace." }
+                    ]
+                },
+                {
+                    sender: "Amigo Gamer (Cuenta duplicada)",
+                    avatar: "🎮",
+                    platform: "Chat de Juego",
+                    text: "¡Hola bro! Descubrí un truco para tener monedas infinitas gratis. Pasame tu correo y clave de acceso y te cargo las monedas desde mi programa especial.",
+                    options: [
+                        { text: "A. Pasarle mi contraseña porque es un tema de juegos y somos amigos.", correct: false, explanation: "Nunca compartas tu clave con nadie. Además, la cuenta de tu amigo pudo haber sido hackeada o suplantada." },
+                        { text: "B. Decirle que no, no dar mis datos y verificar por otro medio (como una llamada) si realmente es mi amigo.", correct: true, explanation: "¡Correcto! Nunca se deben entregar contraseñas. Siempre verificá por otra vía si la persona es quien dice ser." },
+                        { text: "C. Pasarle la clave de mi hermano/a para probar.", correct: false, explanation: "¡No! Ponés en riesgo la privacidad y datos de tus familiares." }
+                    ]
+                }
+            ],
+            level3: [
+                {
+                    title: "Recuperación de Cuenta",
+                    q: "Una persona que no conocés en Internet se ofrece a ayudarte a recuperar una cuenta perdida y te pide tu contraseña para 'configurarla'. ¿Qué hacés?",
+                    options: [
+                        { text: "A. Compartir la contraseña, parece muy amable.", correct: false, explanation: "La contraseña es 100% personal e intransferible. Darla es perder el control de tu cuenta." },
+                        { text: "B. No compartirla y utilizar el procedimiento oficial de recuperación de la plataforma.", correct: true, explanation: "¡Perfecto! Siempre utilizá los métodos oficiales. Nadie de confianza te pedirá tu clave." },
+                        { text: "C. Enviarle mi correo y la clave de la casilla de mails.", correct: false, explanation: "Esto le daría acceso total a toda tu información y privacidad." }
+                    ]
+                },
+                {
+                    title: "Verificación en Dos Pasos (2FA)",
+                    q: "¿Por qué es muy recomendable activar la 'Verificación en dos pasos' o el 'Segundo factor de autenticación' en tus redes y juegos?",
+                    options: [
+                        { text: "A. Porque le da un código extra único a mi celular aunque alguien descubra mi contraseña.", correct: true, explanation: "¡Exacto! El 2FA agrega un candado extra. Sin ese código que llega a tu celular, no pueden entrar." },
+                        { text: "B. No sirve de nada, solo hace más lento el inicio de sesión.", correct: false, explanation: "Aunque toma 5 segundos más, aumenta un 99% la seguridad de tu perfil." },
+                        { text: "C. Es obligatorio para que te regalen juegos.", correct: false, explanation: "Su función principal es la protección de tus datos y privacidad." }
+                    ]
+                },
+                {
+                    title: "Configuración de Privacidad",
+                    q: "Creaste un perfil en una red social nueva. ¿Cómo conviene configurar la privacidad?",
+                    options: [
+                        { text: "A. Perfil totalmente Público para tener miles de seguidores que no conozco.", correct: false, explanation: "Un perfil público expone tus fotos, ubicación y datos a cualquier desconocido con intenciones dudosas." },
+                        { text: "B. Perfil Privado, permitiendo ver mis publicaciones solo a amigos y familiares conocidos.", correct: true, explanation: "¡Muy bien! Controlar quién ve lo que publicás es la mejor barrera de protección." },
+                        { text: "C. Compartir la clave con mi grupo de amigos para que suban cosas.", correct: false, explanation: "Tu perfil es personal. No debe compartirse el acceso." }
+                    ]
+                },
+                {
+                    title: "Solicitudes de Amistad de Desconocidos",
+                    q: "Un perfil sin foto de perfil o con fotos sospechosas te envía solicitud de amistad y te habla inmediatamente para saber a qué escuela vas.",
+                    options: [
+                        { text: "A. Darle el nombre de mi escuela para ser amable.", correct: false, explanation: "Nunca des datos de tus lugares frecuentes (escuela, club, casa) a gente desconocida." },
+                        { text: "B. Ignorar/rechazar la solicitud, no dar datos personales y bloquear si insiste.", correct: true, explanation: "¡Excelente! No sabés quién está realmente detrás de esa pantalla. Cuidá tu información física y digital." },
+                        { text: "C. Invitarlo a salir después del colegio.", correct: false, explanation: "Peligroso. Nunca te encontrés a solas con gente que solo conocés por Internet." }
+                    ]
+                }
+            ],
+            level4: {
+                title: "Conflicto en el Grupo de Chat",
+                scenario: "En el grupo de chat del colegio, un par de compañeros empiezan a compartir memes burlándose del aspecto físico de un estudiante. Luego, alguien sugiere subir esos memes a una cuenta pública de Instagram para que 'todos se rían'.",
+                actions: [
+                    { text: "1. No reenviar, no darle 'me gusta' ni apoyar los mensajes burlescos.", safe: true },
+                    { text: "2. Sumarse a las burlas para no quedar afuera del grupo.", safe: false },
+                    { text: "3. Sacar capturas de pantalla o guardar pruebas de lo sucedido por si se necesitan.", safe: true },
+                    { text: "4. Apoyar a la persona afectada en privado y hacerle saber que no está sola.", safe: true },
+                    { text: "5. Reenviar los memes a otros grupos de amigos fuera del colegio.", safe: false },
+                    { text: "6. Reportar/denunciar el contenido en la app y pedir ayuda a un adulto de confianza (profesor/padres).", safe: true }
+                ],
+                lesson: "El ciberbullying provoca un daño real en las personas. Compartir, reaccionar o dar me gusta aumenta el sufrimiento de la víctima. Los testigos tienen un gran poder: al no difundir y pedir ayuda a un adulto, podés frenar el acoso."
+            },
+            level5: {
+                scenarios: [
+                    {
+                        title: "Escenario A: Pedido de Secreto e Intención de Encuentro",
+                        text: "Llevás unas semanas hablando por chat con alguien que conociste jugando en línea. Se muestra súper simpático/a, pero te pide que 'NUNCA le cuentes a tus padres ni amigos sobre sus charlas'. Ahora te insiste para encontrarse a solas en una plaza apartada.",
+                        options: [
+                            { text: "A. Ir a la cita en secreto porque me cae bien y me prometió un regalo.", safe: false, explanation: "Peligro alto. Pedir secreto y encuentros a solas es la principal señal de alerta de engaño o Grooming." },
+                            { text: "B. Rechazar el encuentro, NO ir a solas, contarle de inmediato a un adulto de confianza y no ocultar las charlas.", safe: true, explanation: "¡Decisión vital! Si te piden secretos o encuentros privados, SIEMPRE contale a un adulto. No estás en falta." },
+                            { text: "C. Ir pero llevar a un hermano más chico.", safe: false, explanation: "No arriesgues tu seguridad ni la de otros. Jamás asistas a encuentros a solas con desconocidos de la red." }
+                        ]
+                    },
+                    {
+                        title: "Escenario B: Amenaza y Chantaje Digital (Sextorsión)",
+                        text: "Alguien en Internet te amenaza con publicar fotos privadas tuyas o inventar rumores si no le enviás más fotos o si no hacés lo que te pide.",
+                        options: [
+                            { text: "A. Cumplir con lo que pide por miedo a que cumpla su amenaza.", safe: false, explanation: "No cedas. Los chantajistas nunca se detienen aunque cumplas. Ceder aumentará la presión." },
+                            { text: "B. Borrar todo el chat y esconder la situación por vergüenza.", safe: false, explanation: "Borrar el chat elimina pruebas valiosas. Y recordá: Vos NUNCA tenés la culpa de ser amenazado/a." },
+                            { text: "C. Guardar capturas como evidencia, NO ceder a la amenaza, bloquear la cuenta y pedir ayuda URGENTE a un adulto de confianza.", safe: true, explanation: "¡La respuesta correcta y valiente! La víctima NUNCA tiene la culpa. Guardar pruebas y hablar con un adulto de confianza o realizar la denuncia frena el delito." }
+                        ]
+                    }
+                ]
+            },
+            level6: [
+                {
+                    caseText: "Detectás una cuenta en red social que usa el nombre y fotos reales de tu compañero de banco para insultar a otros.",
+                    options: [
+                        { text: "A. Avisarle a tu compañero y denunciar la cuenta por suplantación de identidad.", correct: true, explanation: "Protegés la identidad de tu amigo y frenás la difamación." },
+                        { text: "B. Seguir la cuenta para reírte de las publicaciones.", correct: false, explanation: "Alimentás el daño y la suplantación." }
+                    ]
+                },
+                {
+                    caseText: "Te llega un mensaje de texto SMS con el texto: 'Su paquete de correo está retenido, ingrese a http://track-falso.site para pagar $100'.",
+                    options: [
+                        { text: "A. Hacer clic y pagar rápido.", correct: false, explanation: "Es Phishing para robar tus datos bancarios o tarjeta." },
+                        { text: "B. Borrar el mensaje e ignorar el enlace.", correct: true, explanation: "Evitás caer en una estafa digital." }
+                    ]
+                },
+                {
+                    caseText: "Vés una foto vergonzosa de una chica de otro curso circulando por WhatsApp.",
+                    options: [
+                        { text: "A. Cortar la cadena: NO reenviar y borrar el mensaje.", correct: true, explanation: "Ciertas actitudes detienen la violencia digital." },
+                        { text: "B. Pasárselo a tu grupo de mejores amigos.", correct: false, explanation: "Difundir sin consentimiento amplifica el daño." }
+                    ]
+                },
+                {
+                    caseText: "En una sala de juegos online, un usuario desconocido pide tu número de celular y dirección para 'mandarte un sticker gratis'.",
+                    options: [
+                        { text: "A. Decirle que no y mantener privada tu información personal.", correct: true, explanation: "Tus datos personales valen mucho. Cuidalos." },
+                        { text: "B. Darle la dirección pero no el teléfono.", correct: false, explanation: "La dirección física es información ultra sensible." }
+                    ]
+                },
+                {
+                    caseText: "Un compañero te confiesa en el recreo que un desconocido de Internet lo está amenazando.",
+                    options: [
+                        { text: "A. Escucharlo sin juzgarlo y acompañarlo a hablar con un docente, preceptor o sus padres.", correct: true, explanation: "Sos un gran aliado digital. Nadie debe enfrentar amenazas en soledad." },
+                        { text: "B. Decirle que no le dé importancia y se lo guarde.", correct: false, explanation: "Las amenazas deben tratarse con ayuda de personas adultas." }
+                    ]
+                }
+            ],
+            bonus: [
+                { q: "«Si una cuenta tiene una foto de perfil muy real, significa que pertenece a una persona totalmente confiable».", isReal: false, exp: "MITO: Cualquier persona puede descargar una foto de internet y usarla para crear un perfil falso." },
+                { q: "«Es fundamental activar la verificación en dos pasos (2FA) en todas nuestras cuentas».", isReal: true, exp: "REALIDAD: Es una de las mejores defensas para evitar que te roben cuentas y contraseñas." },
+                { q: "«Si alguien sufre ciberbullying o chantaje, debe resolverlo en silencio sin contarle a nadie».", isReal: false, exp: "MITO: Ocultarlo genera más angustia. Buscar ayuda con un adulto de confianza es el primer paso para solucionarlo." },
+                { q: "«No debo compartir ni reenviar contenidos que humillen o perjudiquen a otras personas».", isReal: true, exp: "REALIDAD: Al no difundir contenido dañino, ayudás a construir un entorno digital respetuoso y seguro." },
+                { q: "«Pedir ayuda a un adulto de confianza (padres, profesores, preceptores) puede protegerte ante un delito digital».", isReal: true, exp: "REALIDAD: Los adultos de confianza están para acompañar, proteger y orientar legalmente sin juzgarte." },
+                { q: "«Si una persona te amenaza por Internet, tenés que cumplir todas sus exigencias para que no se enoje».", isReal: false, exp: "MITO: Nunca cedas a chantajes. Las exigencias no paran al ceder; hay que guardar pruebas, bloquear y pedir ayuda." }
+            ]
+        };
+
+        class GameController {
+            constructor() {
+                this.container = document.getElementById('main-container');
+            }
+
+            init() {
+                this.updateHeader();
+                this.showScreen('intro');
+            }
+
+            toggleSound() {
+                GAME_STATE.soundEnabled = !GAME_STATE.soundEnabled;
+                sound.enabled = GAME_STATE.soundEnabled;
+                const icon = document.getElementById('sound-icon');
+                if (GAME_STATE.soundEnabled) {
+                    icon.className = 'fa-solid fa-volume-high';
+                } else {
+                    icon.className = 'fa-solid fa-volume-xmark text-red-400';
+                }
+            }
+
+            addScore(pts) {
+                GAME_STATE.score += pts;
+                document.getElementById('score-display').innerText = GAME_STATE.score;
+            }
+
+            unlockBadge(key, name, icon) {
+                if (!GAME_STATE.badges[key]) {
+                    GAME_STATE.badges[key] = true;
+                    sound.playBadge();
+                    this.updateHeader();
+                    this.showBadgeNotification(name, icon);
+                }
+            }
+
+            showBadgeNotification(name, icon) {
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-6 right-6 z-50 glass-panel border-2 border-cyber-accent text-white px-5 py-4 rounded-xl shadow-2xl flex items-center space-x-4 animate-bounce';
+                toast.innerHTML = `
+                    <div class="w-12 h-12 rounded-full bg-cyber-accent/20 border border-cyber-accent flex items-center justify-center text-cyber-accent text-2xl">
+                        <i class="${icon}"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-cyber-accent font-mono uppercase font-bold">¡Nueva Insignia Desbloqueada!</div>
+                        <div class="text-base font-bold text-white">${name}</div>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 4000);
+            }
+
+            updateHeader() {
+                const badgeKeys = Object.keys(GAME_STATE.badges);
+                const unlocked = badgeKeys.filter(k => GAME_STATE.badges[k]).length;
+                document.getElementById('badges-count-display').innerText = `${unlocked}/${badgeKeys.length}`;
+
+                const totalLevels = 7; // 6 levels + bonus
+                const completed = GAME_STATE.completedLevels.length;
+                const pct = Math.min(100, Math.round((completed / totalLevels) * 100));
+                document.getElementById('global-progress').style.width = `${pct}%`;
+            }
+
+            showScreen(screenName, extraData = null) {
+                sound.playClick();
+                this.container.innerHTML = '';
+
+                switch(screenName) {
+                    case 'intro':
+                        this.renderIntro();
+                        break;
+                    case 'map':
+                        this.renderMap();
+                        break;
+                    case 'level1':
+                        this.renderLevel1();
+                        break;
+                    case 'level2':
+                        this.renderLevel2(extraData || 0);
+                        break;
+                    case 'level3':
+                        this.renderLevel3(extraData || 0);
+                        break;
+                    case 'level4':
+                        this.renderLevel4();
+                        break;
+                    case 'level5':
+                        this.renderLevel5(extraData || 0);
+                        break;
+                    case 'level6':
+                        this.renderLevel6(extraData || 0);
+                        break;
+                    case 'bonus':
+                        this.renderBonus(extraData || 0);
+                        break;
+                    case 'final':
+                        this.renderFinal();
+                        break;
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // --- INTRO SCREEN ---
+            renderIntro() {
+                this.container.innerHTML = `
+                    <div class="glass-panel cyber-border p-6 sm:p-10 rounded-2xl text-center max-w-3xl mx-auto space-y-6">
+                        <div class="inline-block p-4 rounded-full bg-cyber-purple/20 border border-cyber-accent/50 text-cyber-accent text-5xl mb-2 pulse-animation">
+                            <i class="fa-solid fa-city"></i>
+                        </div>
+                        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white neon-text-blue">
+                            MISIÓN: NAVEGACIÓN SEGURA
+                        </h1>
+                        <p class="text-cyber-accent font-semibold text-lg sm:text-xl italic">
+                            «Pensá antes de hacer clic. Protegete y ayudá a los demás»
+                        </p>
+                        
+                        <div class="bg-cyber-dark/80 p-5 rounded-xl border border-cyber-border text-left text-sm sm:text-base text-gray-300 space-y-3 leading-relaxed">
+                            <p>
+                                <span class="text-cyber-accent font-bold">¡Bienvenido/a a la Ciudad Digital!</span> Un mundo lleno de redes sociales, salas de chat, videojuegos y perfiles conectados.
+                            </p>
+                            <p>
+                                Para desbloquear cada zona y convertirte en <strong class="text-cyber-pink">Protector de la Ciudad Digital</strong>, deberás superar desafíos interactivos, aprender a detectar riesgos como el Phishing, Ciberbullying o Grooming, y tomar decisiones seguras.
+                            </p>
+                        </div>
+
+                        <div class="pt-4">
+                            <button onclick="game.showScreen('map')" class="cyber-button w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyber-purple to-cyber-accent text-black font-extrabold text-lg shadow-lg hover:brightness-110">
+                                <i class="fa-solid fa-rocket mr-2"></i> INGRESAR A LA CIUDAD DIGITAL
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // --- CITY MAP HUB ---
+            renderMap() {
+                const levels = [
+                    { id: 'level1', num: 1, name: 'Detectives Digitales', icon: 'fa-magnifying-glass', badge: 'detective', desc: 'Conocé y relacioná los delitos digitales.' },
+                    { id: 'level2', num: 2, name: '¿Mensaje Seguro o Sospechoso?', icon: 'fa-envelope-open-text', badge: null, desc: 'Detectá trampas y Phishing en tus chats.' },
+                    { id: 'level3', num: 3, name: 'Protegé tu Cuenta', icon: 'fa-key', badge: 'guardian', desc: 'Asegurá tus contraseñas y privacidad.' },
+                    { id: 'level4', num: 4, name: 'Alerta, Ciberbullying', icon: 'fa-users-slash', badge: 'aliado', desc: 'Promové la empatía y frená el acoso.' },
+                    { id: 'level5', num: 5, name: 'Misión de Protección', icon: 'fa-shield-heart', badge: null, desc: 'Actuá seguro ante grooming y chantajes.' },
+                    { id: 'level6', num: 6, name: 'Equipo de Seguridad Digital', icon: 'fa-user-shield', badge: 'experto', desc: 'Casos prácticos de prevención en equipo.' },
+                    { id: 'bonus', num: '★', name: 'Mito o Realidad', icon: 'fa-brain', badge: null, desc: 'Ronda especial de mitos y certezas.' }
+                ];
+
+                let cardsHTML = levels.map(l => {
+                    const isDone = GAME_STATE.completedLevels.includes(l.id);
+                    return `
+                        <div onclick="game.showScreen('${l.id}')" class="glass-panel cyber-border hover:cyber-border-glow p-5 rounded-xl cursor-pointer transition flex flex-col justify-between group relative overflow-hidden">
+                            ${isDone ? '<div class="absolute top-3 right-3 text-cyber-success text-xl" title="Completado"><i class="fa-solid fa-circle-check"></i></div>' : ''}
+                            <div>
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="w-10 h-10 rounded-lg bg-cyber-purple/30 border border-cyber-accent/40 flex items-center justify-center text-cyber-accent group-hover:scale-110 transition">
+                                        <i class="fa-solid ${l.icon} text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-xs font-mono text-cyber-accent uppercase font-bold">Nivel ${l.num}</span>
+                                        <h3 class="font-bold text-white text-base leading-tight group-hover:text-cyber-accent transition">${l.name}</h3>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-400 leading-normal">${l.desc}</p>
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-cyber-border/50 flex items-center justify-between">
+                                <span class="text-xs ${isDone ? 'text-cyber-success font-bold' : 'text-cyber-pink font-semibold'}">
+                                    ${isDone ? '✓ Superado' : 'Misión Pendiente →'}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                this.container.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div>
+                                <h2 class="text-2xl sm:text-3xl font-extrabold text-white neon-text-blue">
+                                    MAPA DE LA CIUDAD DIGITAL
+                                </h2>
+                                <p class="text-sm text-gray-400">Seleccioná una zona para resolver desafíos de seguridad.</p>
+                            </div>
+                            ${GAME_STATE.completedLevels.length >= 6 ? `
+                                <button onclick="game.showScreen('final')" class="cyber-button px-5 py-2.5 rounded-xl bg-cyber-pink text-white font-bold text-sm shadow-lg animate-pulse">
+                                    <i class="fa-solid fa-trophy mr-2"></i> VER RESULTADO FINAL
+                                </button>
+                            ` : ''}
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            ${cardsHTML}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // --- LEVEL 1: DETECTIVES DIGITALES ---
+            renderLevel1() {
+                if (!this.l1_state) {
+                    this.l1_state = {
+                        selectedTerm: null,
+                        matchedPairs: [],
+                        items: [...DATA.level1]
+                    };
+                }
+
+                const state = this.l1_state;
+
+                // Create shuffled terms and definitions once
+                if (!state.shuffledTerms) {
+                    state.shuffledTerms = [...DATA.level1].sort(() => Math.random() - 0.5);
+                    state.shuffledDefs = [...DATA.level1].sort(() => Math.random() - 0.5);
+                }
+
+                let termsHTML = state.shuffledTerms.map(t => {
+                    const isMatched = state.matchedPairs.includes(t.id);
+                    const isSelected = state.selectedTerm === t.id;
+                    return `
+                        <button onclick="game.handleL1TermSelect('${t.id}')" ${isMatched ? 'disabled' : ''} 
+                            class="w-full text-left p-3 rounded-xl border text-sm font-semibold transition ${
+                                isMatched ? 'bg-cyber-success/10 border-cyber-success text-cyber-success opacity-60' :
+                                isSelected ? 'bg-cyber-accent/20 border-cyber-accent text-cyber-accent shadow-md scale-102' :
+                                'bg-cyber-dark/80 border-cyber-border text-white hover:border-cyber-accent/50'
+                            }">
+                            <i class="fa-solid ${isMatched ? 'fa-check-circle' : 'fa-shield'} mr-2"></i> ${t.term}
+                        </button>
+                    `;
+                }).join('');
+
+                let defsHTML = state.shuffledDefs.map(d => {
+                    const isMatched = state.matchedPairs.includes(d.id);
+                    return `
+                        <button onclick="game.handleL1DefSelect('${d.id}')" ${isMatched ? 'disabled' : ''} 
+                            class="w-full text-left p-3 rounded-xl border text-xs sm:text-sm transition ${
+                                isMatched ? 'bg-cyber-success/10 border-cyber-success text-gray-400 opacity-60' :
+                                'bg-cyber-dark/80 border-cyber-border text-gray-200 hover:border-cyber-accent'
+                            }">
+                            ${d.def}
+                        </button>
+                    `;
+                }).join('');
+
+                this.container.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between bg-cyber-card p-4 rounded-xl border border-cyber-border">
+                            <div>
+                                <span class="text-xs font-mono text-cyber-accent font-bold">NIVEL 1</span>
+                                <h2 class="text-xl font-extrabold text-white">DETECTIVES DIGITALES</h2>
+                                <p class="text-xs text-gray-400">Seleccioná un término de la izquierda y hacé clic en su definición correcta a la derecha.</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-cyber-accent">${state.matchedPairs.length} / ${DATA.level1.length}</span>
+                                <div class="text-xs text-gray-400">Parejas</div>
+                            </div>
+                        </div>
+
+                        <div id="l1-feedback" class="hidden p-4 rounded-xl text-sm font-medium border"></div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <h3 class="text-sm font-bold text-cyber-accent uppercase font-mono mb-2">Términos o Delitos</h3>
+                                ${termsHTML}
+                            </div>
+                            <div class="space-y-2">
+                                <h3 class="text-sm font-bold text-cyber-accent uppercase font-mono mb-2">Definiciones</h3>
+                                ${defsHTML}
+                            </div>
+                        </div>
+
+                        ${state.matchedPairs.length === DATA.level1.length ? `
+                            <div class="p-6 glass-panel border-2 border-cyber-success rounded-2xl text-center space-y-4">
+                                <div class="text-3xl text-cyber-success"><i class="fa-solid fa-award"></i></div>
+                                <h3 class="text-2xl font-extrabold text-white">¡Nivel 1 Superado!</h3>
+                                <p class="text-sm text-gray-300">Has aprendido a identificar los principales delitos y riesgos en el entorno digital.</p>
+                                <button onclick="game.finishLevel1()" class="cyber-button px-6 py-3 rounded-xl bg-cyber-success text-black font-extrabold text-base">
+                                    CONTINUAR AL MAPA →
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            handleL1TermSelect(termId) {
+                sound.playClick();
+                this.l1_state.selectedTerm = termId;
+                this.renderLevel1();
+            }
+
+            handleL1DefSelect(defId) {
+                if (!this.l1_state.selectedTerm) {
+                    const fb = document.getElementById('l1-feedback');
+                    fb.className = 'p-3 rounded-xl text-xs font-bold border border-yellow-500 bg-yellow-500/10 text-yellow-300 block';
+                    fb.innerText = '💡 Primero seleccioná un concepto de la columna izquierda.';
+                    return;
+                }
+
+                if (this.l1_state.selectedTerm === defId) {
+                    sound.playSuccess();
+                    this.l1_state.matchedPairs.push(defId);
+                    this.addScore(15);
+                    const item = DATA.level1.find(i => i.id === defId);
+                    
+                    const fb = document.getElementById('l1-feedback');
+                    fb.className = 'p-3 rounded-xl text-xs font-medium border border-cyber-success bg-cyber-success/10 text-cyber-success block';
+                    fb.innerHTML = `<strong>¡Correcto!</strong> <i>${item.term}</i>: ${item.def}`;
+                } else {
+                    sound.playError();
+                    const fb = document.getElementById('l1-feedback');
+                    fb.className = 'p-3 rounded-xl text-xs font-medium border border-cyber-alert bg-cyber-alert/10 text-pink-300 block';
+                    fb.innerHTML = `<strong>¡Cerca!</strong> Esa definición pertenece a otro concepto. Intentá nuevamente sin miedo a equivocarte.`;
+                }
+
+                this.l1_state.selectedTerm = null;
+                this.renderLevel1();
+            }
+
+            finishLevel1() {
+                if (!GAME_STATE.completedLevels.includes('level1')) {
+                    GAME_STATE.completedLevels.push('level1');
+                }
+                this.unlockBadge('detective', 'Detective Digital', 'fa-magnifying-glass');
+                this.l1_state = null;
+                this.showScreen('map');
+            }
+
+            // --- LEVEL 2: ¿MENSAJE SEGURO O SOSPECHOSO? ---
+            renderLevel2(step) {
+                const scenario = DATA.level2[step];
+                if (!scenario) {
+                    if (!GAME_STATE.completedLevels.includes('level2')) {
+                        GAME_STATE.completedLevels.push('level2');
+                    }
+                    this.showScreen('map');
+                    return;
+                }
+
+                let optionsHTML = scenario.options.map((opt, idx) => `
+                    <button onclick="game.handleL2Answer(${step}, ${idx})" class="cyber-button w-full text-left p-4 rounded-xl bg-cyber-dark/80 border border-cyber-border hover:border-cyber-accent text-sm text-gray-200 transition">
+                        ${opt.text}
+                    </button>
+                `).join('');
+
+                this.container.innerHTML = `
+                    <div class="max-w-2xl mx-auto space-y-6">
+                        <div class="flex items-center justify-between bg-cyber-card p-4 rounded-xl border border-cyber-border">
+                            <div>
+                                <span class="text-xs font-mono text-cyber-accent font-bold">NIVEL 2 — DESAFÍO ${step + 1}/3</span>
+                                <h2 class="text-xl font-extrabold text-white">¿MENSAJE SEGURO O SOSPECHOSO?</h2>
+                            </div>
+                        </div>
+
+                        <!-- Chat Simulation Card -->
+                        <div class="glass-panel border-2 border-cyber-accent/40 rounded-2xl p-5 space-y-4">
+                            <div class="flex items-center justify-between border-b border-cyber-border pb-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="text-2xl">${scenario.avatar}</div>
+                                    <div>
+                                        <div class="font-bold text-sm text-white">${scenario.sender}</div>
+                                        <div class="text-xs text-cyber-accent font-mono">${scenario.platform}</div>
+                                    </div>
+                                </div>
+                                <span class="text-xs bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-1 rounded">Mensaje entrante</span>
+                            </div>
+                            
+                            <div class="bg-cyber-dark/90 p-4 rounded-xl border border-cyber-border text-sm text-gray-200 leading-relaxed font-mono">
+                                ${scenario.text}
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <h3 class="text-sm font-bold text-gray-300">¿Qué opción elegís para responder de forma segura?</h3>
+                            ${optionsHTML}
+                        </div>
+
+                        <div id="l2-explanation" class="hidden p-5 rounded-xl border text-sm space-y-3"></div>
+                    </div>
+                `;
+            }
+
+            handleL2Answer(step, optIdx) {
+                const opt = DATA.level2[step].options[optIdx];
+                const expBox = document.getElementById('l2-explanation');
+                
+                if (opt.correct) {
+                    sound.playSuccess();
+                    this.addScore(20);
+                    expBox.className = 'p-5 rounded-xl border border-cyber-success bg-cyber-success/10 text-white block space-y-3';
+                    expBox.innerHTML = `
+                        <div class="flex items-center space-x-2 text-cyber-success font-bold text-base">
+                            <i class="fa-solid fa-circle-check"></i> <span>¡Excelente Decisión!</span>
+                        </div>
+                        <p class="text-sm text-gray-200">${opt.explanation}</p>
+                        <button onclick="game.showScreen('level2', ${step + 1})" class="cyber-button px-5 py-2.5 rounded-xl bg-cyber-success text-black font-bold text-xs uppercase tracking-wider">
+                            SIGUIENTE MENSAJE →
+                        </button>
+                    `;
+                } else {
+                    sound.playError();
+                    expBox.className = 'p-5 rounded-xl border border-cyber-alert bg-cyber-alert/10 text-white block space-y-3';
+                    expBox.innerHTML = `
+                        <div class="flex items-center space-x-2 text-cyber-alert font-bold text-base">
+                            <i class="fa-solid fa-triangle-exclamation"></i> <span>Pensémoslo juntos</span>
+                        </div>
+                        <p class="text-sm text-gray-200">${opt.explanation}</p>
+                        <p class="text-xs text-cyber-accent">Probá seleccionar la opción más segura para continuar.</p>
+                    `;
+                }
+            }
+
+            // --- LEVEL 3: PROTEGÉ TU CUENTA ---
+            renderLevel3(step) {
+                const scenario = DATA.level3[step];
+                if (!scenario) {
+                    if (!GAME_STATE.completedLevels.includes('level3')) {
+                        GAME_STATE.completedLevels.push('level3');
+                    }
+                    this.unlockBadge('guardian', 'Guardián de Contraseñas', 'fa-key');
+                    this.showScreen('map');
+                    return;
+                }
+
+                let optionsHTML = scenario.options.map((opt, idx) => `
+                    <button onclick="game.handleL3Answer(${step}, ${idx})" class="cyber-button w-full text-left p-4 rounded-xl bg-cyber-dark/80 border border-cyber-border hover:border-cyber-accent text-sm text-gray-200 transition">
+                        ${opt.text}
+                    </button>
+                `).join('');
+
+                this.container.innerHTML = `
+                    <div class="max-w-2xl mx-auto space-y-6">
+                        <div class="flex items-center justify-between bg-cyber-card p-4 rounded-xl border border-cyber-border">
+                            <div>
+                                <span class="text-xs font-mono text-cyber-accent font-bold">NIVEL 3 — PREGUNTAS DE PRIVACIDAD (${step + 1}/4)</span>
+                                <h2 class="text-xl font-extrabold text-white">PROTEGÉ TU CUENTA</h2>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel cyber-border p-6 rounded-2xl space-y-4">
+                            <div class="flex items-center space-x-3 text-cyber-accent">
+                                <i class="fa-solid fa-lock text-2xl"></i>
+                                <h3 class="text-lg font-bold text-white">${scenario.title}</h3>
+                            </div>
+                            <p class="text-base text-gray-200 font-medium leading-relaxed">
+                                ${scenario.q}
+                            </p>
+                        </div>
+
+                        <div class="space-y-3">
+                            ${optionsHTML}
+                        </div>
+
+                        <div id="l3-explanation" class="hidden p-5 rounded-xl border text-sm space-y-3"></div>
+                    </div>
+                `;
+            }
+
+            handleL3Answer(step, optIdx) {
+                const opt = DATA.level3[step].options[optIdx];
+                const expBox = document.getElementById('l3-explanation');
+                
+                if (opt.correct) {
+                    sound.playSuccess();
+                    this.addScore(20);
+                    expBox.className = 'p-5 rounded-xl border border-cyber-success bg-cyber-success/10 text-white block space-y-3';
+                    expBox.innerHTML = `
+                        <div class="flex items-center space-x-2 text-cyber-success font-bold text-base">
+                            <i class="fa-solid fa-shield-check"></i> <span>¡Medida de Seguridad Perfecta!</span>
+                        </div>
+                        <p class="text-sm text-gray-200">${opt.explanation}</p>
+                        <button onclick="game.showScreen('level3', ${step + 1})" class="cyber-button px-5 py-2.5 rounded-xl bg-cyber-success text-black font-bold text-xs uppercase tracking-wider">
+                            AVANZAR →
+                        </button>
+                    `;
+                } else {
+                    sound.playError();
+                    expBox.className = 'p-5 rounded-xl border border-cyber-alert bg-cyber-alert/10 text-white block space-y-3';
+                    expBox.innerHTML = `
+                        <div class="flex items-center space-x-2 text-cyber-alert font-bold text-base">
+                            <i class="fa-solid fa-circle-exclamation"></i> <span>Oportunidad de Aprendizaje</span>
+                        </div>
+                        <p class="text-sm text-gray-200">${opt.explanation}</p>
+                        <p class="text-xs text-cyber-accent">Elegí la alternativa segura para proteger tu perfil.</p>
+                    `;
+                }
+            }
+
+            // --- LEVEL 4: ALERTA, CIBERBULLYING ---
+            renderLevel4() {
+                const data = DATA.level4;
+                if (!this.l4_selected) this.l4_selected = [];
+
+                let actionsHTML = data.actions.map((act, idx) => {
+                    const isSelected = this.l4_selected.includes(idx);
+                    return `
+                        <button onclick="game.toggleL4Action(${idx})" class="w-full text-left p-4 rounded-xl border transition flex items-start space-x-3 ${
+                            isSelected ? 'bg-cyber-accent/20 border-cyber-accent text-white shadow-lg' : 'bg-cyber-dark/80 border-cyber-border text-gray-300 hover:border-gray-500'
+                        }">
+                            <div class="mt-0.5 text-lg ${isSelected ? 'text-cyber-accent' : 'text-gray-500'}">
+                                <i class="fa-solid ${isSelected ? 'fa-square-check' : 'fa-square'}"></i>
+                            </div>
+                            <span class="text-sm font-medium leading-normal">${act.text}</span>
+                        </button>
+                    `;
+                }).join('');
+
+                this.container.innerHTML = `
+                    <div class="max-w-2xl mx-auto space-y-6">
+                        <div class="flex items-center justify-between bg-cyber-card p-4 rounded-xl border border-cyber-border">
+                            <div>
+                                <span class="text-xs font-mono text-cyber-accent font-bold">NIVEL 4</span>
+                                <h2 class="text-xl font-extrabold text-white">ALERTA, CIBERBULLYING</h2>
+                                <p class="text-xs text-gray-400">Seleccioná TODAS las acciones seguras y responsables ante esta situación.</p>
+                            </div>
+                        </div>
+
+                        <!-- Story Card -->
+                        <div class="glass-panel border border-cyber-pink/40 p-5 rounded-2xl space-y-3">
+                            <div class="flex items-center space-x-2 text-cyber-pink font-bold text-sm">
+                                <i class="fa-solid fa-users-slash"></i> <span>SITUACIÓN EN EL GRUPO DE CHAT</span>
+                            </div>
+                            <p class="text-sm sm:text-base text-gray-200 leading-relaxed bg-cyber-dark/60 p-4 rounded-xl border border-cyber-border">
+                                "${data.scenario}"
+                            </p>
+                        </div>
+
+                        <div class="space-y-3">
+                            <h3 class="text-sm font-bold text-gray-300">Marque las acciones que deberías realizar:</h3>
+                            ${actionsHTML}
+                        </div>
+
+                        <button onclick="game.evaluateL4()" class="cyber-button w-full py-4 rounded-xl bg-cyber-purple text-white font-extrabold text-base shadow-lg">
+                            VERIFICAR MIS ACCIONES DE APOYO
+                        </button>
+
+                        <div id="l4-feedback" class="hidden p-5 rounded-xl border text-sm space-y-3"></div>
+                    </div>
+                `;
+            }
+
+            toggleL4Action(idx) {
+                sound.playClick();
+                if (this.l4_selected.includes(idx)) {
+                    this.l4_selected = this.l4_selected.filter(i => i !== idx);
+                } else {
+                    this.l4_selected.push(idx);
+                }
+                this.renderLevel4();
+            }
+
+            evaluateL4() {
+                const data = DATA.level4;
+                const fb = document.getElementById('l4-feedback');
+
+                // Check if all safe items selected and no unsafe items
+                const chosenSafe = this.l4_selected.filter(i => data.actions[i].safe).length;
+                const totalSafe = data.actions.filter(a => a.safe).length;
+                const chosenUnsafe = this.l4_selected.filter(i => !data.actions[i].safe).length;
+
+                if (chosenSafe === totalSafe && chosenUnsafe === 0) {
+                    sound.playSuccess();
+                    this.addScore(30);
+                    if (!GAME_STATE.completedLevels.includes('level4')) {
+                        GAME_STATE.completedLevels.push('level4');
+                    }
+                    this.unlockBadge('aliado', 'Aliado contra el Ciberbullying', 'fa-users-slash');
+
+                    fb.className = 'p-5 rounded-xl border border-cyber-success bg-cyber-success/10 text-white block space-y-3';
+                    fb.innerHTML = `
+                        <div class="flex items-center space-x-2 text-cyber-success font-bold text-base">
+                            <i class="fa-solid fa-heart-circle-check"></i> <span>¡Excelente empatía digital!</span>
+                        </div>
+                        <p class="text-sm text-gray-200">${data.lesson}</p>
+                        <button onclick="game.showScreen('map')" class="cyber-button px-5 py-2.5 rounded-xl bg-cyber-success text-black font-bold text-xs uppercase tracking-wider">
+                            VOLVER AL MAPA →
+                        </button>
+                    `;
+                } else {
+                    sound.playError();
+                    fb.className = 'p-5 rounded-xl border border-cyber-alert bg-cyber-alert/10 text-white block space-y-3';
+                    fb.innerHTML = `
+                        <div class="flex items-center space-x-2 text-cyber-alert font-bold text-base">
+                            <i class="fa-solid fa-circle-exclamation"></i> <span>Revisemos la elección</span>
+                        </div>
+                        <p class="text-sm text-gray-200">Recordá que jamás debemos compartir contenido humillante ni sumarnos a las burlas. Asegurate de seleccionar sólo las acciones de protección y apoyo sin difundir el daño.</p>
+                    `;
+                }
+            }
+
+            // --- LEVEL 5: MISIÓN DE PROTECCIÓN ---
+            renderLevel5(step) {
+                const scenario = DATA.level5.scenarios[step];
+                if (!scenario) {
+                    if (!GAME_STATE.completedLevels.includes('level5')) {
+                        GAME_STATE.completedLevels.push('level5');
+                    }
+                    this.showScreen('map');
+                    return;
+                }
+
+                let optionsHTML = scenario.options.map((opt, idx) => `
+                    <button onclick="game.handleL5Answer(${step}, ${idx})" class="cyber-button w-full text-left p-4 rounded-xl bg-cyber-dark/80 border border-cyber-border hover:border-cyber-accent text-sm text-gray-200 transition leading-relaxed">
+                        ${opt.text}
+                    </button>
+                `).join('');
+
+                this.container.innerHTML = `
+                    <div class="max-w-2xl mx-auto space-y-6">
+                        <div class="flex items-center justify-between bg-cyber-card p-4 rounded-xl border border-cyber-border">
+                            <div>
+                                <span class="text-xs font-mono text-cyber-accent font-bold">NIVEL 5 — ESCENARIO ${step + 1}/2</span>
+                                <h2 class="text-xl font-extrabold text-white">MISIÓN DE PROTECCIÓN</h2>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel border-2 border-red-500/40 p-6 rounded-2xl space-y-4">
+                            <div class="flex items-center space-x-3 text-red-400 font-bold">
+                                <i class="fa-solid fa-shield-heart text-2xl"></i>
+                                <h3 class="text-lg text-white font-bold">${scenario.title}</h3>
+                            </div>
+                            <p class="text-sm sm:text-base text-gray-200 bg-cyber-dark/80 p-4 rounded-xl border border-cyber-border leading-relaxed">
+                                "${scenario.text}"
+                            </p>
+                        </div>
+
+                        <div class="space-y-3">
+                            <h3 class="text-sm font-bold text-gray-300">¿Cuál es la forma segura y correcta de actuar?</h3>
+                            ${optionsHTML}
+                        </div>
+
+                        <div id="l5-explanation" class="hidden p-5 rounded-xl border text-sm space-y-3"></div>
+                    </div>
+                `;
+            }
+
+            handleL5Answer(step, optIdx) {
+                const opt = DATA.level5.scenarios[step].options[optIdx];
+                const expBox = document.getElementById('l5-explanation');
+
+                if (opt.safe) {
+                    sound.playSuccess();
+                    this.addScore(25);
+                    expBox.className = 'p-5 rounded-xl border border-cyber-success bg-cyber-success/10 text-white block space-y-3';
+                    expBox.innerHTML = `
+                        <div class="flex items-center space-x-2 text-cyber-success font-bold text-base">
+                            <i class="fa-solid fa-shield-halved"></i> <span>¡Protección Total!</span>
+                        </div>
+                        <p class="text-sm text-gray-200 leading-relaxed">${opt.explanation}</p>
+                        <button onclick="game.showScreen('level5', ${step + 1})" class="cyber-button px-5 py-2.5 rounded-xl bg-cyber-success text-black font-bold text-xs uppercase tracking-wider">
+                            SIGUIENTE ESCENARIO →
+                        </button>
+                    `;
+                } else {
+                    sound.playError();
+                    expBox.className = 'p-5 rounded-xl border border-cyber-alert bg-cyber-alert/10 text-white block space-y-3';
+                    expBox.innerHTML = `
+                        <div class="flex items-center space-x-2 text-cyber-alert font-bold text-base">
+                            <i class="fa-solid fa-triangle-exclamation"></i> <span>Recordá esto muy bien:</span>
+                        </div>
+                        <p class="text-sm text-gray-200 leading-relaxed">${opt.explanation}</p>
+                        <p class="text-xs text-cyber-accent font-semibold">Cambiá tu respuesta por la opción segura para aprender cómo protegerte.</p>
+                    `;
+                }
+            }
+
+            // --- LEVEL 6: EQUIPO DE SEGURIDAD DIGITAL ---
+            renderLevel6(step) {
+                const item = DATA.level6[step];
+                if (!item) {
+                    if (!GAME_STATE.completedLevels.includes('level6')) {
+                        GAME_STATE.completedLevels.push('level6');
+                    }
+                    this.unlockBadge('experto', 'Experto en Prevención', 'fa-user-shield');
+                    this.showScreen('map');
+                    return;
+                }
+
+                let optionsHTML = item.options.map((opt, idx) => `
+                    <button onclick="game.handleL6Answer(${step}, ${idx})" class="cyber-button w-full text-left p-4 rounded-xl bg-cyber-dark/80 border border-cyber-border hover:border-cyber-accent text-sm text-gray-200 transition">
+                        ${opt.text}
+                    </button>
+                `).join('');
+
+                this.container.innerHTML = `
+                    <div class="max-w-2xl mx-auto space-y-6">
+                        <div class="flex items-center justify-between bg-cyber-card p-4 rounded-xl border border-cyber-border">
+                            <div>
+                                <span class="text-xs font-mono text-cyber-accent font-bold">NIVEL 6 — CASO ${step + 1}/5</span>
+                                <h2 class="text-xl font-extrabold text-white">EQUIPO DE SEGURIDAD DIGITAL</h2>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel cyber-border p-6 rounded-2xl space-y-3">
+                            <div class="flex items-center space-x-2 text-cyber-accent font-bold text-sm">
+                                <i class="fa-solid fa-user-shield"></i> <span>CASO PRÁCTICO RÁPIDO</span>
+                            </div>
+                            <p class="text-base text-gray-200 font-medium leading-relaxed">
+                                "${item.caseText}"
+                            </p>
+                        </div>
+
+                        <div class="space-y-3">
+                            ${optionsHTML}
+                        </div>
+
+                        <div id="l6-explanation" class="hidden p-5 rounded-xl border text-sm space-y-3"></div>
+                    </div>
+                `;
+            }
+
+            handleL6Answer(step, optIdx) {
+                const opt = DATA.level6[step].options[optIdx];
+                const expBox = document.getElementById('l6-explanation');
+
+                if (opt.correct) {
+                    sound.playSuccess();
+                    this.addScore(15);
+                    expBox.className = 'p-5 rounded-xl border border-cyber-success bg-cyber-success/10 text-white block space-y-3';
+                    expBox.innerHTML = `
+                        <div class="flex items-center space-x-2 text-cyber-success font-bold text-base">
+                            <i class="fa-solid fa-circle-check"></i> <span>¡Acción Preventiva Correcta!</span>
+                        </div>
+                        <p class="text-sm text-gray-200">${opt.explanation}</p>
+                        <button onclick="game.showScreen('level6', ${step + 1})" class="cyber-button px-5 py-2.5 rounded-xl bg-cyber-success text-black font-bold text-xs uppercase tracking-wider">
+                            SIGUIENTE CASO →
+                        </button>
+                    `;
+                } else {
+                    sound.playError();
+                    expBox.className = 'p-5 rounded-xl border border-cyber-alert bg-cyber-alert/10 text-white block space-y-3';
+                    expBox.innerHTML = `
+                        <div class="flex items-center space-x-2 text-cyber-alert font-bold text-base">
+                            <i class="fa-solid fa-circle-xmark"></i> <span>Inseguro</span>
+                        </div>
+                        <p class="text-sm text-gray-200">${opt.explanation}</p>
+                        <p class="text-xs text-cyber-accent">Elegí la acción preventiva para continuar.</p>
+                    `;
+                }
+            }
+
+            // --- BONUS LEVEL: MITO O REALIDAD ---
+            renderBonus(step) {
+                const item = DATA.bonus[step];
+                if (!item) {
+                    if (!GAME_STATE.completedLevels.includes('bonus')) {
+                        GAME_STATE.completedLevels.push('bonus');
+                    }
+                    this.showScreen('map');
+                    return;
+                }
+
+                this.container.innerHTML = `
+                    <div class="max-w-2xl mx-auto space-y-6">
+                        <div class="flex items-center justify-between bg-cyber-card p-4 rounded-xl border border-cyber-border">
+                            <div>
+                                <span class="text-xs font-mono text-cyber-pink font-bold">RONDA ESPECIAL (${step + 1}/6)</span>
+                                <h2 class="text-xl font-extrabold text-white">MITO O REALIDAD</h2>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel border-2 border-cyber-purple/50 p-8 rounded-2xl text-center space-y-4">
+                            <div class="text-4xl text-cyber-accent"><i class="fa-solid fa-brain"></i></div>
+                            <h3 class="text-lg sm:text-xl font-bold text-white leading-relaxed">
+                                ${item.q}
+                            </h3>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <button onclick="game.handleBonusAnswer(${step}, false)" class="cyber-button py-5 rounded-xl bg-cyber-pink/20 border-2 border-cyber-pink hover:bg-cyber-pink text-white font-extrabold text-lg shadow-lg">
+                                ❌ MITO
+                            </button>
+                            <button onclick="game.handleBonusAnswer(${step}, true)" class="cyber-button py-5 rounded-xl bg-cyber-accent/20 border-2 border-cyber-accent hover:bg-cyber-accent hover:text-black text-white font-extrabold text-lg shadow-lg">
+                                ✅ REALIDAD
+                            </button>
+                        </div>
+
+                        <div id="bonus-explanation" class="hidden p-5 rounded-xl border text-sm space-y-3"></div>
+                    </div>
+                `;
+            }
+
+            handleBonusAnswer(step, choice) {
+                const item = DATA.bonus[step];
+                const expBox = document.getElementById('bonus-explanation');
+                const isCorrect = choice === item.isReal;
+
+                if (isCorrect) {
+                    sound.playSuccess();
+                    this.addScore(15);
+                    expBox.className = 'p-5 rounded-xl border border-cyber-success bg-cyber-success/10 text-white block space-y-3';
+                    expBox.innerHTML = `
+                        <div class="flex items-center space-x-2 text-cyber-success font-bold text-base">
+                            <i class="fa-solid fa-thumbs-up"></i> <span>¡Acertaste!</span>
+                        </div>
+                        <p class="text-sm text-gray-200">${item.exp}</p>
+                        <button onclick="game.showScreen('bonus', ${step + 1})" class="cyber-button px-5 py-2.5 rounded-xl bg-cyber-success text-black font-bold text-xs uppercase tracking-wider">
+                            SIGUIENTE AFIRMACIÓN →
+                        </button>
+                    `;
+                } else {
+                    sound.playError();
+                    expBox.className = 'p-5 rounded-xl border border-cyber-alert bg-cyber-alert/10 text-white block space-y-3';
+                    expBox.innerHTML = `
+                        <div class="flex items-center space-x-2 text-cyber-alert font-bold text-base">
+                            <i class="fa-solid fa-circle-info"></i> <span>Solución correcta:</span>
+                        </div>
+                        <p class="text-sm text-gray-200">${item.exp}</p>
+                        <button onclick="game.showScreen('bonus', ${step + 1})" class="cyber-button px-5 py-2.5 rounded-xl bg-cyber-accent text-black font-bold text-xs uppercase tracking-wider">
+                            ENTENDIDO, SIGUIENTE →
+                        </button>
+                    `;
+                }
+            }
+
+            // --- FINAL SCREEN ---
+            renderFinal() {
+                sound.playSuccess();
+
+                const badgesList = [
+                    { id: 'detective', name: 'Detective Digital', icon: 'fa-magnifying-glass', desc: 'Reconoce los delitos digitales' },
+                    { id: 'guardian', name: 'Guardián de Contraseñas', icon: 'fa-key', desc: 'Protege sus cuentas y privacidad' },
+                    { id: 'aliado', name: 'Aliado contra Ciberbullying', icon: 'fa-users-slash', desc: 'Previene el acoso e imparte empatía' },
+                    { id: 'experto', name: 'Experto en Prevención', icon: 'fa-user-shield', desc: 'Identifica decisiones y redes seguras' }
+                ];
+
+                let badgesHTML = badgesList.map(b => {
+                    const owned = GAME_STATE.badges[b.id];
+                    return `
+                        <div class="p-4 rounded-xl border ${owned ? 'bg-cyber-purple/20 border-cyber-accent text-white' : 'bg-cyber-dark/40 border-cyber-border/40 text-gray-600 opacity-50'} flex items-center space-x-3">
+                            <div class="text-2xl ${owned ? 'text-cyber-accent' : 'text-gray-600'}"><i class="fa-solid ${b.icon}"></i></div>
+                            <div>
+                                <div class="font-bold text-sm">${b.name}</div>
+                                <div class="text-xs text-gray-400">${b.desc}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                this.container.innerHTML = `
+                    <div class="space-y-8 max-w-4xl mx-auto">
+                        <!-- Trophy Banner -->
+                        <div class="glass-panel border-2 border-cyber-accent p-8 rounded-3xl text-center space-y-4 relative overflow-hidden">
+                            <div class="inline-block p-4 rounded-full bg-cyber-accent/20 text-cyber-accent text-5xl mb-2 pulse-animation">
+                                <i class="fa-solid fa-trophy"></i>
+                            </div>
+                            <h1 class="text-3xl sm:text-5xl font-extrabold text-white neon-text-blue">
+                                ¡MISIÓN CUMPLIDA!
+                            </h1>
+                            <p class="text-xl font-bold text-cyber-pink">
+                                TÍTULO OBTENIDO: «PROTECTOR DE LA CIUDAD DIGITAL»
+                            </p>
+                            <p class="text-sm text-gray-300 max-w-xl mx-auto">
+                                Superaste los desafíos de la ciudad digital. Ahora contás con herramientas valiosas para navegar de manera consciente, segura y solidaria.
+                            </p>
+
+                            <div class="pt-2 flex justify-center items-center space-x-6">
+                                <div class="text-center">
+                                    <div class="text-xs text-gray-400 font-mono">PUNTAJE TOTAL</div>
+                                    <div class="text-3xl font-extrabold text-cyber-accent font-mono">${GAME_STATE.score} PTS</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Important Highlight Message -->
+                        <div class="bg-gradient-to-r from-red-900/40 via-cyber-dark to-purple-900/40 border-2 border-red-500/60 p-6 rounded-2xl text-center space-y-3 shadow-xl">
+                            <div class="text-red-400 text-2xl"><i class="fa-solid fa-shield-cat"></i></div>
+                            <h3 class="text-lg font-black text-white tracking-wide uppercase">RECUERDA SIEMPRE</h3>
+                            <p class="text-base sm:text-lg text-red-200 font-bold leading-relaxed max-w-2xl mx-auto">
+                                "TU SEGURIDAD IMPORTA. NO TENÉS QUE ENFRENTAR UNA AMENAZA EN SOLEDAD. SI ALGO TE INCOMODA, TE ENGAÑA O TE AMENAZA, HABLÁ CON UN ADULTO DE CONFIANZA."
+                            </p>
+                        </div>
+
+                        <!-- Badges Grid -->
+                        <div class="space-y-3">
+                            <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                                <i class="fa-solid fa-award text-cyber-pink"></i> <span>Tus Insignias de Protección:</span>
+                            </h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                ${badgesHTML}
+                            </div>
+                        </div>
+
+                        <!-- Commitments Checklist -->
+                        <div class="glass-panel cyber-border p-6 rounded-2xl space-y-4">
+                            <h3 class="text-lg font-bold text-cyber-accent flex items-center space-x-2">
+                                <i class="fa-solid fa-hand-holding-heart"></i> <span>Mis Compromisos de Navegación Segura:</span>
+                            </h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-200">
+                                <div class="flex items-center space-x-2 bg-cyber-dark/60 p-3 rounded-lg border border-cyber-border">
+                                    <i class="fa-solid fa-check text-cyber-success"></i> <span>Proteger mis datos personales.</span>
+                                </div>
+                                <div class="flex items-center space-x-2 bg-cyber-dark/60 p-3 rounded-lg border border-cyber-border">
+                                    <i class="fa-solid fa-check text-cyber-success"></i> <span>Utilizar contraseñas seguras y 2FA.</span>
+                                </div>
+                                <div class="flex items-center space-x-2 bg-cyber-dark/60 p-3 rounded-lg border border-cyber-border">
+                                    <i class="fa-solid fa-check text-cyber-success"></i> <span>No abrir enlaces sospechosos.</span>
+                                </div>
+                                <div class="flex items-center space-x-2 bg-cyber-dark/60 p-3 rounded-lg border border-cyber-border">
+                                    <i class="fa-solid fa-check text-cyber-success"></i> <span>Respetar a otras personas en redes.</span>
+                                </div>
+                                <div class="flex items-center space-x-2 bg-cyber-dark/60 p-3 rounded-lg border border-cyber-border">
+                                    <i class="fa-solid fa-check text-cyber-success"></i> <span>No compartir contenido dañino.</span>
+                                </div>
+                                <div class="flex items-center space-x-2 bg-cyber-dark/60 p-3 rounded-lg border border-cyber-border">
+                                    <i class="fa-solid fa-check text-cyber-success"></i> <span>Pedir ayuda a un adulto cuando lo necesite.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Channels of Help in Argentina -->
+                        <div class="bg-cyber-dark/90 border border-cyber-border p-6 rounded-2xl space-y-4">
+                            <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                                <i class="fa-solid fa-phone-volume text-cyber-accent"></i> <span>Canales Oficiales de Asistencia y Denuncia (Argentina):</span>
+                            </h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                                <div class="bg-cyber-card p-3 rounded-xl border border-cyber-border">
+                                    <div class="font-bold text-cyber-accent text-sm">Línea 102</div>
+                                    <p class="text-gray-400 mt-1">Servicio gratuito y confidencial de atención especializada sobre derechos de niñas, niños y adolescentes.</p>
+                                </div>
+                                <div class="bg-cyber-card p-3 rounded-xl border border-cyber-border">
+                                    <div class="font-bold text-cyber-pink text-sm">Línea 137</div>
+                                    <p class="text-gray-400 mt-1">Programa Las Víctimas contra las Violencias. Acompañamiento e intervención las 24 hs.</p>
+                                </div>
+                                <div class="bg-cyber-card p-3 rounded-xl border border-cyber-border">
+                                    <div class="font-bold text-cyber-success text-sm">Ciberdelitos / UFECI</div>
+                                    <p class="text-gray-400 mt-1">Unidad Fiscal Especializada en Ciberdelincuencia para denuncias informáticas.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reset Game Button -->
+                        <div class="text-center pt-4">
+                            <button onclick="game.resetGame()" class="cyber-button px-8 py-4 rounded-xl bg-gradient-to-r from-cyber-purple to-cyber-accent text-black font-extrabold text-base shadow-xl">
+                                <i class="fa-solid fa-rotate-right mr-2"></i> VOLVER A JUGAR / REINICIAR
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            resetGame() {
+                GAME_STATE.score = 0;
+                GAME_STATE.completedLevels = [];
+                GAME_STATE.badges = { detective: false, guardian: false, aliado: false, experto: false };
+                this.updateHeader();
+                this.showScreen('intro');
+            }
+        }
+
+        let game;
+        window.onload = function() {
+            game = new GameController();
+            game.init();
+        };
+    </script>
+</body>
+</html>
